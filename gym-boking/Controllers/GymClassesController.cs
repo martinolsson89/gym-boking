@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using gym_boking.Data;
 using gym_boking.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace gym_boking.Controllers
 {
     public class GymClassesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public GymClassesController(ApplicationDbContext context)
+        public GymClassesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: GymClasses
@@ -33,14 +36,27 @@ namespace gym_boking.Controllers
                 return NotFound();
             }
 
-            var gymClass = await _context.GymClasses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (gymClass == null)
+            var vm = await _context.GymClasses
+                .Where(gc => gc.Id == id.Value)
+                .Select(gc => new gym_boking.Models.ViewModels.GymClassDetailsViewModel
+                {
+                    Id = gc.Id,
+                    Name = gc.Name,
+                    StartTime = gc.StartTime,
+                    Duration = gc.Duration,
+                    Description = gc.Description,
+                    AttendeeEmails = gc.AttendingMembers
+                .Select(am => am.ApplicationUser.Email!)
+                .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (vm == null)
             {
                 return NotFound();
             }
 
-            return View(gymClass);
+            return View(vm);
         }
 
         // GET: GymClasses/Create
@@ -146,6 +162,47 @@ namespace gym_boking.Controllers
             }
 
             await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BookingToggle(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var gymClass = await _context.GymClasses
+                .Include(gc => gc.AttendingMembers)
+                .FirstOrDefaultAsync(gc => gc.Id == id.Value);
+
+            if (gymClass == null) return NotFound();
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null) return Challenge();
+
+            var existingBooking = gymClass.AttendingMembers
+                .FirstOrDefault(am => am.ApplicationUserId == user.Id);
+
+            if (existingBooking != null)
+            {
+                _context.Remove(existingBooking);
+                TempData["BookingMessage"] = $"You have unbooked from '{gymClass.Name}'.";
+            }
+            else
+            {
+                var booking = new ApplicationUserGymClass
+                {
+                    ApplicationUserId = user.Id,
+                    GymClassId = gymClass.Id,
+                };
+
+                _context.Add(booking);
+                TempData["BookingMessage"] = $"You have booked '{gymClass.Name}'.";
+            }
+
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 

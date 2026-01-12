@@ -1,4 +1,4 @@
-﻿@model gym_boking.Models.GymClass
+﻿@model gym_boking.Models.ViewModels.GymClassDetailsViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -35,6 +35,22 @@
             @Html.DisplayFor(model => model.Description)
         </dd>
     </dl>
+</div>
+<div>
+    <h4>Attending Members</h4>
+    @if (!Model.AttendeeEmails.Any())
+    {
+        <p>No attendees yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var email in Model.AttendeeEmails)
+            {
+                <li>@email</li>
+            }
+        </ul>
+    }
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
