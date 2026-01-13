@@ -1,13 +1,15 @@
 using gym_boking.Data;
+using gym_boking.Extensions;
 using gym_boking.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace gym_boking;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseMigrationsEndPoint();
+            await app.SeedDataAsync();
         }
         else
         {
