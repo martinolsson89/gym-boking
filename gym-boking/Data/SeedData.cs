@@ -24,8 +24,8 @@ public class SeedData
 
         await AddRolesAsync(roleNames);
 
-        var admin = await AddAccountAsync(adminEmail, "P@55w.rd!");
-        var user = await AddAccountAsync(userEmail, "Pa55w.rd!");
+        var admin = await AddAccountAsync(adminEmail, "Admin", "Adminsson", "P@55w.rd!");
+        var user = await AddAccountAsync(userEmail, "User", "Usersson", "Pa55w.rd!");
 
         await AddUserToRoleAsync(admin, "Admin");
         await AddUserToRoleAsync(user, "User");
@@ -52,11 +52,13 @@ public class SeedData
             if (!result.Succeeded) throw new Exception(string.Join("\n", result.Errors)); 
         }
     }
-    private static async Task<ApplicationUser> AddAccountAsync(string email, string password)
+    private static async Task<ApplicationUser> AddAccountAsync(string email, string firstName, string lastName, string password)
     {
         var user = new ApplicationUser
         {
             UserName = email,
+            FirstName = firstName,
+            LastName = lastName,
             Email = email,
             EmailConfirmed = true,
         };

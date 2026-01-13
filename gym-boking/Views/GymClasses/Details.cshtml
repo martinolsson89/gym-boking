@@ -38,21 +38,24 @@
 </div>
 <div>
     <h4>Attending Members</h4>
-    @if (!Model.AttendeeEmails.Any())
+    @if (!Model.AttendeeFullName.Any())
     {
         <p>No attendees yet.</p>
     }
     else
     {
         <ul>
-            @foreach (var email in Model.AttendeeEmails)
+            @foreach (var name in Model.AttendeeFullName)
             {
-                <li>@email</li>
+                <li>@name</li>
             }
         </ul>
     }
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (User.IsInRole("Admin"))
+    {
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> <span> | </span>
+    }
     <a asp-action="Index">Back to List</a>
 </div>

@@ -14,5 +14,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<ApplicationUserGymClass>()
         .HasKey(t => new { t.ApplicationUserId, t.GymClassId });
+
+        modelBuilder.Entity<ApplicationUser>()
+            .Property<DateTime>("TimeOfRegistration")
+            .HasColumnType("datetime2")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("GETDATE()");
     }
 }

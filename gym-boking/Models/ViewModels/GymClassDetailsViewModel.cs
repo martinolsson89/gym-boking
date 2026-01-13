@@ -7,6 +7,5 @@ public sealed class GymClassDetailsViewModel
     public DateTime StartTime { get; init; }
     public TimeSpan Duration { get; init; }
     public string Description { get; init; } = string.Empty;
-
-    public IReadOnlyList<string> AttendeeEmails { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> AttendeeFullName { get; init; } = Array.Empty<string>();
 }

@@ -1,5 +1,6 @@
 ﻿using gym_boking.Data;
 using gym_boking.Models;
+using gym_boking.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -40,15 +41,15 @@ namespace gym_boking.Controllers
 
             var vm = await _context.GymClasses
                 .Where(gc => gc.Id == id.Value)
-                .Select(gc => new gym_boking.Models.ViewModels.GymClassDetailsViewModel
+                .Select(gc => new GymClassDetailsViewModel
                 {
                     Id = gc.Id,
                     Name = gc.Name,
                     StartTime = gc.StartTime,
                     Duration = gc.Duration,
                     Description = gc.Description,
-                    AttendeeEmails = gc.AttendingMembers
-                .Select(am => am.ApplicationUser.Email!)
+                    AttendeeFullName = gc.AttendingMembers
+                .Select(am => am.ApplicationUser.FullName)
                 .ToList()
                 })
                 .FirstOrDefaultAsync();
