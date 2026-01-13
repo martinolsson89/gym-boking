@@ -24,10 +24,54 @@ namespace gym_boking.Controllers
             _userManager = userManager;
         }
 
+        public async Task<IActionResult> BookedPass()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null) return Challenge();
+
+            var gymClasses = await _context.GymClasses
+                .Where(gc => gc.AttendingMembers.Any(am => am.ApplicationUserId == user.Id) && gc.StartTime >= DateTime.Now)
+                .ToListAsync();
+
+            var vm = new BookedPassViewModel
+            {
+                ApplicationUserId = user.Id,
+                FullName = user.FullName,
+                gymClasses = gymClasses
+            };
+
+            return View(vm);
+        }
+
+        public async Task<IActionResult> HistoryPass()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null) return Challenge();
+
+            var gymClasses = await _context.GymClasses
+                .Where(gc => gc.AttendingMembers.Any(am => am.ApplicationUserId == user.Id) && gc.StartTime < DateTime.Now)
+                .ToListAsync();
+
+            var vm = new BookedPassViewModel
+            {
+                ApplicationUserId = user.Id,
+                FullName = user.FullName,
+                gymClasses = gymClasses
+            };
+
+            return View(vm);
+        }
+
         // GET: GymClasses
         public async Task<IActionResult> Index()
         {
-            return View(await _context.GymClasses.ToListAsync());
+            var gymClasses = await _context.GymClasses
+                .Include(gc => gc.AttendingMembers)
+                .ToListAsync();
+
+            return View(gymClasses);
         }
 
         // GET: GymClasses/Details/5
@@ -197,7 +241,7 @@ namespace gym_boking.Controllers
             if (existingBooking != null)
             {
                 _context.Remove(existingBooking);
-                TempData["BookingMessage"] = $"You have unbooked from '{gymClass.Name}'.";
+                TempData["BookingMessage"] = $"Du har avbokat '{gymClass.Name}'.";
             }
             else
             {
@@ -208,7 +252,7 @@ namespace gym_boking.Controllers
                 };
 
                 _context.Add(booking);
-                TempData["BookingMessage"] = $"You have booked '{gymClass.Name}'.";
+                TempData["BookingMessage"] = $"Du har bokat '{gymClass.Name}'.";
             }
 
             await _context.SaveChangesAsync();

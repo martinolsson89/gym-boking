@@ -1,4 +1,6 @@
-﻿@model IEnumerable<gym_boking.Models.GymClass>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<gym_boking.Models.ApplicationUser> UserManager
+@model IEnumerable<gym_boking.Models.GymClass>
 
 @{
     ViewData["Title"] = "Index";
@@ -37,39 +39,130 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Duration)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <td>
-                    <form asp-action="BookingToggle" asp-route-id="@item.Id" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-link p-0 align-baseline">Book</button>
-                    </form> |
-                    @if (User.IsInRole("Admin"))
+            @if(item.StartTime >= DateTime.Now)
+            {
+                <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Duration)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
-                           <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> |</span>
-                            
+                        <td>
+                        <form asp-action="BookingToggle" asp-route-id="@item.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                                @{
+                                        var userId = UserManager.GetUserId(User);
+                                        var isBooked = userId is not null && item.AttendingMembers.Any(m => m.ApplicationUserId == userId);
+                                 }
+                                 <button type="submit" class="btn btn-link p-0 align-baseline">
+                                 @(isBooked ? "Boka av" : "Boka")
+                                 </button>
+                        </form> |
+                        @if (User.IsInRole("Admin"))
+                        {
+                               <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> |</span>
+                                
+                        }
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span>|</span>    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        }
+                        </td>   
                     }
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <span>|</span>    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    }
-                    </td>   
-                }
-        </tr>
+            </tr>
+                
+            }
 }
     </tbody>
 </table>
+
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        Historik
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Duration)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+
+@foreach (var item in Model) {
+            @if(item.StartTime < DateTime.Now)
+            {
+                <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Duration)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <td>
+                        <form asp-action="BookingToggle" asp-route-id="@item.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                                @{
+                                        var userId = UserManager.GetUserId(User);
+                                        var isBooked = userId is not null && item.AttendingMembers.Any(m => m.ApplicationUserId == userId);
+                                 }
+                                 <button type="submit" class="btn btn-link p-0 align-baseline">
+                                 @(isBooked ? "Boka av" : "Boka")
+                                 </button>
+                        </form> |
+                        @if (User.IsInRole("Admin"))
+                        {
+                               <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> |</span>
+                                
+                        }
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span>|</span>    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        }
+                        </td>   
+                    }
+            </tr>
+                
+            }
+}
+    </tbody>
+</table>
+    </div>
+  </div>
+</div>
+</div>

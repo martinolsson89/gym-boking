@@ -1,0 +1,82 @@
+﻿@model gym_boking.Models.ViewModels.BookedPassViewModel
+
+@{
+    ViewData["Title"] = "BookedPass";
+}
+@if (TempData["BookingMessage"] is string message)
+{
+    <div class="alert alert-success" role="alert">
+        @message
+    </div>
+}
+@if (!Model.gymClasses.Any())
+{
+    <h3>@Model.FullName har inga bokade pass ännu...</h3>
+}
+else
+{
+    <h3>@Model.FullName bokade pass</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Namn
+                </th>
+                <th>
+                    Start time
+                </th>
+                <th>
+                    Duration
+                </th>
+                <th>
+                    Description
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.gymClasses) 
+            {
+                    <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Duration)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <td>
+                            <form asp-action="BookingToggle" asp-route-id="@item.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                    
+                                     <button type="submit" class="btn btn-link p-0 align-baseline">
+                                     Boka av
+                                     </button>
+                            </form> |
+                            @if (User.IsInRole("Admin"))
+                            {
+                                   <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> |</span>
+                                    
+                            }
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <span>|</span>    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                            }
+                            </td>   
+                        }
+                </tr>     
+            }
+        </tbody>
+    </table>
+}
+
+
